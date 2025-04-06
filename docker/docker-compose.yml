@@ -1,0 +1,31 @@
+services:
+  popcat-todoweb:
+    container_name: popcat-todoweb
+    image: ghcr.io/herrerde/popcat-todoweb:latest
+    restart: always
+    environment:
+      - OAUTH2_CLIENT_ID=
+      - OAUTH2_CLIENT_SECRET=
+      - MONGODB_HOST=
+      - MONGODB_USER=
+      - MONGODB_PASS=
+      - FLASK_SECRET_KEY=
+      - AUTHORIZATION_BASE_URL=http://discord.com/api/oauth2/authorize
+      - OAUTH2_REDIRECT_URI=http://localhost:5000/callback
+      - PUBLIC_ALL=True
+    ports:
+      - 5000:5000
+    depends_on:
+      - db
+  db:
+    image: mongo:latest
+    restart: always
+    container_name: mongodb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=popcat
+      - MONGO_INITDB_ROOT_PASSWORD=popcat
+    volumes:
+      - mongo-data:/data/db
+volumes:
+  mongo-data:
+    driver: local
