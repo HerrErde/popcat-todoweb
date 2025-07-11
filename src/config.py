@@ -14,13 +14,8 @@ OAUTH2_CLIENT_ID = os.getenv("OAUTH2_CLIENT_ID")
 OAUTH2_CLIENT_SECRET = os.getenv("OAUTH2_CLIENT_SECRET")
 OAUTH2_REDIRECT_URI = "http://localhost:5000/callback"
 
-API_BASE_URL = os.getenv("API_BASE_URL", "https://discordapp.com/api")
-AUTHORIZATION_BASE_URL = API_BASE_URL + "/oauth2/authorize"
-TOKEN_URL = API_BASE_URL + "/oauth2/token"
-
 FLASK_SECRET_KEY = os.getenv("FLASK_SECRET_KEY")
 PUBLIC_ALL = os.getenv("PUBLIC_ALL", False)
-
 
 HOST = os.getenv("HOST", "0.0.0.0")
 PORT = os.getenv("PORT", 5000)

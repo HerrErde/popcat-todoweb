@@ -7,12 +7,11 @@ db_user = config.DB_USER
 db_pass = config.DB_PASS
 db_cluster = config.DB_CLUSTER
 
-if db_cluster:
-    MONGODB_URI = f"mongodb+srv://{db_user}:{db_pass}@{db_host}/?retryWrites=true&w=majority&appName={db_cluster}"
-else:
-    MONGODB_URI = (
-        f"mongodb://{db_user}:{db_pass}@{db_host}/?retryWrites=true&w=majority"
-    )
+prefix = "mongodb+srv" if db_cluster else "mongodb"
+app_name = f"&appName={db_cluster}" if db_cluster else ""
+MONGODB_URI = (
+    f"{prefix}://{db_user}:{db_pass}@{db_host}/?retryWrites=true&w=majority{app_name}"
+)
 
 
 class DBHandler:
@@ -57,12 +56,10 @@ class DBHandler:
     async def remove_todo(self, user_id, id):
         collection_name = str(user_id)
         try:
-            # Use $pull to remove the specific todo item with the given title
             result = await self.db_users[collection_name].update_one(
                 {}, {"$pull": {"todo": {"id": id}}}
             )
 
-            # Check if any documents were modified
             if result.modified_count > 0:
                 return True
             else:
@@ -76,7 +73,6 @@ class DBHandler:
         try:
             user_document = await self.db_users[collection_name].find_one({})
 
-            # If the document exists and has a 'todo' field, return it
             if user_document and "todo" in user_document:
                 return user_document["todo"]
             else:
@@ -104,12 +100,12 @@ class DBHandler:
                                     "_id": todo.get("id", ""),
                                     "title": todo.get("title", ""),
                                     "description": todo.get("description", ""),
-                                    "user": int(collection_name),
+                                    "user": collection_name,
                                 }
                             )
 
-            return {"items": items}
+            return items
 
         except Exception as e:
             print(f"Error getting todo lists: {e}")
-            return {"items": []}
+            return []

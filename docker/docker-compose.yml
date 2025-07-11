@@ -12,7 +12,7 @@ services:
       - FLASK_SECRET_KEY=
       - AUTHORIZATION_BASE_URL=http://discord.com/api/oauth2/authorize
       - OAUTH2_REDIRECT_URI=http://localhost:5000/callback
-      - PUBLIC_ALL=True
+      - PUBLIC_ALL=False
     ports:
       - 5000:5000
     depends_on:

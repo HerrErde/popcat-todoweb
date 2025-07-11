@@ -1,4 +1,5 @@
 import shortuuid
+import asyncio
 import uvicorn
 from quart import Quart, jsonify, redirect, render_template, request, session, url_for
 from requests_oauthlib import OAuth2Session
@@ -7,7 +8,7 @@ import config
 from db import DBHandler
 
 app = Quart(__name__)
-app.debug = True
+app.debug = config.DEBUG
 app.config["SECRET_KEY"] = config.FLASK_SECRET_KEY
 
 db_handler = DBHandler()
@@ -15,7 +16,6 @@ db_handler = DBHandler()
 
 @app.before_serving
 async def before_serving():
-    # Initialize the DB handler before the app starts
     await db_handler.initialize()
 
 
@@ -34,17 +34,9 @@ def make_session(token=None, state=None, scope=None):
             "client_id": config.OAUTH2_CLIENT_ID,
             "client_secret": config.OAUTH2_CLIENT_SECRET,
         },
-        auto_refresh_url=config.TOKEN_URL,
+        auto_refresh_url="https://discordapp.com/api/oauth2/token",
         token_updater=token_updater,
     )
-
-
-@app.before_request
-def disable_route():
-    if not config.PUBLIC_ALL:
-        # Check if the request is for a route you want to disable
-        if request.path in ["/all"]:
-            return jsonify({"error": "Page not found"}), 404
 
 
 @app.errorhandler(404)
@@ -58,16 +50,21 @@ async def home():
         return redirect(url_for("login"))
 
     discord = make_session(token=session.get("oauth2_token"))
-    user = discord.get(config.API_BASE_URL + "/users/@me").json()
+    user = discord.get("https://discordapp.com/api/users/@me").json()
     display_name = user.get("global_name")
-    return await render_template("index.html", display_name=display_name)
+    user_id = user.get("id")
+    return await render_template(
+        "index.html", display_name=display_name, user_id=user_id
+    )
 
 
 @app.route("/login")
 async def login():
     scope = request.args.get("scope", "identify")
     discord = make_session(scope=scope.split(" "))
-    authorization_url, state = discord.authorization_url(config.AUTHORIZATION_BASE_URL)
+    authorization_url, state = discord.authorization_url(
+        "https://discordapp.com/api/oauth2/authorize"
+    )
     session["oauth2_state"] = state
     return redirect(authorization_url)
 
@@ -77,7 +74,6 @@ async def callback():
     if (await request.values).get("error"):
         return jsonify(error=(await request.values)["error"])
 
-    # No need to await request.args
     if session.get("oauth2_state") != request.args.get("state"):
         return jsonify(error="State mismatch"), 400
 
@@ -89,7 +85,7 @@ async def callback():
 
     try:
         token = discord.fetch_token(
-            config.TOKEN_URL,
+            "https://discordapp.com/api/oauth2/token",
             client_secret=config.OAUTH2_CLIENT_SECRET,
             code=authorization_code,
             include_client_id=True,
@@ -101,45 +97,59 @@ async def callback():
     return redirect(url_for("home"))
 
 
-@app.route("/all")
-async def all_todo():
-    todos = await db_handler.list_all()
-    return jsonify(todos)
+@app.route("/all", methods=["GET"])
+async def all_todos():
+    user_id_param = request.args.get("id")
 
+    if config.PUBLIC_ALL and not user_id_param:
+        all_todos = await db_handler.list_all()
+        return jsonify(items=all_todos)
 
-@app.route("/todos", methods=["GET"])
-async def todos_route():
     if "oauth2_token" not in session:
-        return redirect(url_for("login"))
+        return jsonify(error=True, status=401), 401
 
-    discord = make_session(token=session.get("oauth2_token"))
-    user = discord.get(config.API_BASE_URL + "/users/@me").json()
-    user_id = user.get("id")
+    discord = make_session(token=session["oauth2_token"])
+    user = await asyncio.to_thread(
+        lambda: discord.get("https://discordapp.com/api/users/@me").json()
+    )
+    user_id = str(user.get("id"))
+
+    if not user_id_param or str(user_id_param) != user_id:
+        return jsonify(error=True, status=401), 401
 
     user_todos = await db_handler.list_todo(user_id)
     return jsonify(items=user_todos)
 
 
-@app.route("/todo", methods=["POST"])
-async def todo_route():
+@app.route("/save", methods=["POST"])
+async def save_todo():
     if "oauth2_token" not in session:
         return redirect(url_for("login"))
 
-    discord = make_session(token=session.get("oauth2_token"))
-    user = discord.get(config.API_BASE_URL + "/users/@me").json()
-    user_id = user.get("id")
+    data = await request.get_json()
+    title = data.get("title")
+    description = data.get("description")
+    user_id_param = data.get("user_id")
 
-    title = (await request.json).get("title")
-    description = (await request.json).get("description")
+    if not title or not description:
+        return jsonify(error=False, status=400)
+
+    discord = make_session(token=session["oauth2_token"])
+    user = await asyncio.to_thread(
+        lambda: discord.get("https://discordapp.com/api/users/@me").json()
+    )
+    user_id = str(user.get("id"))
+
+    if not user_id_param or str(user_id_param) != user_id:
+        return jsonify(error=True, status=401), 401
+
     id = shortuuid.uuid()
-
-    # Generate a random integer ID and use it directly
     success = await db_handler.add_todo(user_id, title, description, id)
 
     if success:
         user_todos = await db_handler.list_todo(user_id)
         return jsonify(items=user_todos), 201
-    return jsonify(success=success), 400
+    return jsonify(error=False), 400
 
 
 @app.route("/delete", methods=["DELETE"])
@@ -147,19 +157,23 @@ async def delete_todo():
     if "oauth2_token" not in session:
         return redirect(url_for("login"))
 
-    discord = make_session(token=session.get("oauth2_token"))
-    user = discord.get(config.API_BASE_URL + "/users/@me").json()
-    user_id = user.get("id")
+    discord = make_session(token=session["oauth2_token"])
+    user = await asyncio.to_thread(
+        lambda: discord.get("https://discordapp.com/api/users/@me").json()
+    )
+    user_id = str(user.get("id"))
 
-    # Use a safe way to extract the ID
-    id = (await request.json).get("id")
+    if not user_id_param or str(user_id_param) != user_id:
+        return jsonify(error=True, status=401), 401
+
+    data = await request.get_json()
+    id = data.get("id")
+
     if not id:
-        return jsonify(success=False, message="ID not provided"), 400
-
-    print(id)  # For debugging; you can remove it in production
+        return jsonify(error=False, message="ID not provided"), 400
 
     success = await db_handler.remove_todo(user_id, id)
-    return jsonify(success=success), 200 if success else 400
+    return jsonify(error=success), 200 if success else 400
 
 
 startargs = {"host": config.HOST, "port": config.PORT, "reload": config.DEBUG}
