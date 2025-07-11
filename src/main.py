@@ -1,5 +1,6 @@
-import shortuuid
 import asyncio
+
+import shortuuid
 import uvicorn
 from quart import Quart, jsonify, redirect, render_template, request, session, url_for
 from requests_oauthlib import OAuth2Session
