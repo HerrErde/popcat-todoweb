@@ -14,8 +14,8 @@ WORKDIR /app
 
 COPY src/ .
 
-RUN apt update && \
-pip install --no-cache-dir --upgrade pip && \
-pip install -r requirements.txt
+RUN apk add build-base linux-headers && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements.txt
 
 CMD ["python", "main.py"]
