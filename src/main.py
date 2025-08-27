@@ -164,17 +164,18 @@ async def delete_todo():
     )
     user_id = str(user.get("id"))
 
-    if not user_id_param or str(user_id_param) != user_id:
-        return jsonify(error=True, status=401), 401
-
     data = await request.get_json()
-    id = data.get("id")
+    todo_id = data.get("id")
 
-    if not id:
-        return jsonify(error=False, message="ID not provided"), 400
+    if not todo_id:
+        return jsonify(success=False, message="ID not provided"), 400
 
-    success = await db_handler.remove_todo(user_id, id)
-    return jsonify(error=success), 200 if success else 400
+    success = await db_handler.remove_todo(user_id, todo_id)
+
+    if success:
+        return jsonify(success=True, message="Deleted successfully!"), 200
+    else:
+        return jsonify(success=False, message="Todo not found"), 404
 
 
 startargs = {"host": config.HOST, "port": config.PORT, "reload": config.DEBUG}

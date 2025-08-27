@@ -1,0 +1,183 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@900&display=swap');
+@font-face {
+  font-family: PowerGrotesk;
+  src: url('../font/PowerGrotesk-Medium.ttf');
+}
+
+* {
+  color: white;
+  margin: 0;
+  padding: 0;
+}
+
+::selection {
+  background-color: #86efac;
+  color: #09090b;
+}
+
+body {
+  background-color: #09090b;
+  --grid-size: 70px;
+  --grid-strength: 1px;
+  --grid-dash: 10px;
+  --grid-gap: 5px;
+  --grid-color: #333;
+  --paper-color: #09090b;
+  background-color: var(--paper-color);
+  background-size: var(--grid-dash) var(--grid-dash),
+    var(--grid-size) var(--grid-size);
+  background-image: linear-gradient(
+      to bottom,
+      transparent var(--grid-gap),
+      var(--paper-color) var(--grid-gap)
+    ),
+    linear-gradient(
+      to right,
+      var(--grid-color) var(--grid-strength),
+      transparent var(--grid-strength)
+    ),
+    linear-gradient(
+      to right,
+      transparent var(--grid-gap),
+      var(--paper-color) var(--grid-gap)
+    ),
+    linear-gradient(
+      to bottom,
+      var(--grid-color) var(--grid-strength),
+      transparent var(--grid-strength)
+    );
+}
+
+.heading {
+  color: #faf9f6;
+  font-weight: 400;
+  letter-spacing: 2.2px;
+  font-size: 5.75rem;
+  font-family: PowerGrotesk;
+}
+
+@media only screen and (max-width: 900px) {
+  .heading {
+    font-size: 4.25rem !important;
+  }
+}
+
+label {
+  font-family: Nunito Sans, sans-serif;
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: 1.2px;
+}
+
+h2 {
+  font-family: PowerGrotesk;
+}
+
+.delete {
+  padding: 0.5rem;
+  background: #ff3040;
+  border-radius: 6px;
+  font-size: 1.2rem;
+  aspect-ratio: 1 / 1;
+}
+
+.todo-title {
+  font-family: PowerGrotesk;
+  font-size: 1.5rem;
+  font-weight: 400;
+  letter-spacing: 1.2px;
+}
+
+.todo:hover .clear-todo {
+  visibility: visible;
+}
+
+.todo-title::before {
+  content: '/';
+  color: #86efac;
+  margin-right: 0.15rem;
+}
+
+.todo-app {
+  background-clip: padding-box;
+  border: 1px solid #ffffff24;
+  border-radius: 7px;
+  padding: 1.9rem;
+  transition: border 0.3s ease-in-out;
+}
+
+input,
+textarea {
+  flex-shrink: 1;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  height: 3rem;
+  padding-left: 1rem !important;
+  padding-right: 1rem !important;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  line-height: 2;
+  background-color: #ffffff0d;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: none;
+}
+
+input:focus,
+textarea:focus {
+  border: none;
+  outline: 2px solid #86efac;
+  outline-offset: 2px;
+}
+
+.button {
+  outline: none;
+  border: none;
+  background-color: #86efac;
+  color: #09090b;
+  font-family: PowerGrotesk;
+  font-size: 1.4rem;
+  padding: 0.3rem 1.5rem 0.3rem 1.5rem;
+  border-radius: 5px;
+  border: 1px solid #86efac;
+  cursor: pointer;
+  transition: all 0.3s ease-in-out;
+}
+
+.button:hover {
+  background-color: #ffffff0a;
+  color: #86efac;
+  border: 1px solid #86efac;
+  transform: scale(1.05);
+}
+
+.clear {
+  background-color: #f95347 !important;
+  color: #fff !important;
+  border: none !important;
+}
+
+.clear:hover {
+  background-color: #ffffff0a !important;
+  color: #f95347 !important;
+  border: 1px solid #f95347 !important;
+}
+
+.clear-todo {
+  background-color: #ffffff0a !important;
+  color: #f95347 !important;
+  border: 1px solid #f95347 !important;
+  padding: 0.12rem 0.7rem 0.12rem 0.7rem !important;
+  visibility: hidden;
+}
+
+.clear-todo:hover {
+  background-color: #f95347 !important;
+  color: #fff !important;
+  border: none !important;
+  border: 1px solid #f95347 !important;
+}
+
+th {
+  font-weight: 200;
+}

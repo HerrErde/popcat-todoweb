@@ -1,174 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
-    <meta charset="utf8" />
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+    <meta charset="utf-8" />
     <meta
       name="viewport"
       content="width=device-width, initial-scale=1, shrink-to-fit=no" />
     <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" />
-    <link
       rel="icon"
       type="image/png"
       href="https://cdn.discordapp.com/app-icons/1290423568315715604/e72451950ac5f21d3dfc76d87f3684a0.png?size=4096" />
-    <meta name="theme-color" content="#4169e1" />
-    <title>TODO List</title>
-    <style>
-      :root {
-        --primary-light: #8abdff;
-        --primary: #6d5dfc;
-        --primary-dark: #5b0eeb;
-        --white: #ffffff;
-        --greyLight-1: #e4ebf5;
-        --greyLight-2: #c8d0e7;
-        --greyLight-3: #bec8e4;
-        --greyDark: #9baacf;
-      }
-      body {
-        background: #e4ebf5;
-      }
-      .button {
-        width: 9rem;
-        height: 50px;
-        border: none;
-        border-radius: 8px;
-        box-shadow: 0.3rem 0.3rem 0.6rem var(--greyLight-2),
-          -0.2rem -0.2rem 0.5rem var(--white);
-        justify-self: center;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        transition: 0.3s ease;
-        background: var(--primary);
-        box-shadow: inset 0.2rem 0.2rem 1rem var(--primary-light),
-          inset -0.2rem -0.2rem 1rem var(--primary-dark),
-          0.3rem 0.3rem 0.6rem var(--greyLight-2),
-          -0.2rem -0.2rem 0.5rem var(--white);
-        color: white;
-        font-size: 23px;
-      }
-      .button:focus {
-        outline: none;
-      }
-      .table {
-        transition: opacity 0.5s ease;
-      }
-      .fade {
-        opacity: 0;
-      }
-      .table-dark {
-        color: white;
-        background-color: #1b1930 !important;
-      }
-      .dark-mode {
-        background-color: #1b1930;
-        color: white;
-      }
-      .fade-in {
-        animation: fadeIn 0.5s ease forwards;
-      }
-      .fade-out {
-        animation: fadeOut 0.5s ease forwards;
-      }
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-          transform: translateY(-5px);
-        }
-        to {
-          opacity: 1;
-          transform: translateY(0);
-        }
-      }
-      @keyframes fadeOut {
-        from {
-          opacity: 1;
-          transform: translateY(0);
-        }
-        to {
-          opacity: 0;
-          transform: translateY(-5px);
-        }
-      }
-    </style>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/todo.css') }}" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+      rel="stylesheet"
+      href="https://pro.fontawesome.com/releases/v6.0.0-beta2/css/all.css" />
+    <title>{{ display_name }} | TODO List</title>
   </head>
+
   <body>
-    <div class="container my-4">
-      <div class="custom-control custom-switch" style="margin-left: 74vw">
-        <input
-          onclick="dark()"
-          type="checkbox"
-          class="custom-control-input"
-          id="themeToggle" />
-        <label class="custom-control-label" for="themeToggle">Dark Mode</label>
+    <svg
+      class="absolute z-[10] top-[-107vh] left-[-1vw]"
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 3787 2842"
+      fill="none">
+      <g filter="url(#filter)">
+        <ellipse
+          cx="1924.71"
+          cy="273.501"
+          rx="1924.71"
+          ry="273.501"
+          transform="matrix(-0.822377 -0.568943 -0.568943 0.822377 3631.88 2291.09)"
+          class="fill-[#86efac]"
+          fill-opacity="0.21"></ellipse>
+      </g>
+      <defs>
+        <filter
+          id="filter"
+          x="0.860352"
+          y="0.838989"
+          width="3785.16"
+          height="2840.26"
+          filterUnits="userSpaceOnUse"
+          color-interpolation-filters="sRGB">
+          <feFlood flood-opacity="0" result="BackgroundImageFix"></feFlood>
+          <feBlend
+            mode="normal"
+            in="SourceGraphic"
+            in2="BackgroundImageFix"
+            result="shape"></feBlend>
+          <feGaussianBlur
+            stdDeviation="151"
+            result="effect1_foregroundBlur_1065_8"></feGaussianBlur>
+        </filter>
+      </defs>
+    </svg>
+    <div class="relative z-[20]">
+      <div class="mt-[3vh]">
+        <h2 class="heading text-center">Todo List</h2>
       </div>
-      <h2 class="text-center">{{ display_name }}'s Todo List</h2>
-      <div class="form-group">
-        <label for="title">Title</label>
-        <input
-          autocomplete="off"
-          type="text"
-          class="form-control"
-          id="title"
-          aria-describedby="emailHelp"
-          required="" />
-      </div>
-      <div class="form-group">
-        <label for="description">Description</label>
-        <textarea class="form-control" id="description" rows="3"></textarea>
-      </div>
-      <button id="add" class="button button-primary">Add to list</button>
-      <div id="items" class="my-4">
-        <h2>Your Items</h2>
-        <table id="tab" class="table">
-          <thead>
-            <tr>
-              <th scope="col">No</th>
-              <th scope="col">Title</th>
-              <th scope="col">Description</th>
-              <th scope="col">Actions</th>
-            </tr>
-          </thead>
-          <tbody id="tableBody" class=""></tbody>
-        </table>
+      <div
+        class="todo-app bg-[#ffffff0a] mx-[10vw] lg:mx-[17vw] mt-[1.7vh]"
+        style="backdrop-filter: blur(6.2px)">
+        <div class="inputs mb-5">
+          <div class="form-group flex flex-col gap-[0.10rem]">
+            <label for="title">Title</label>
+            <input
+              autocomplete="off"
+              type="text"
+              class="form-control"
+              id="title"
+              aria-describedby="emailHelp"
+              required="" />
+          </div>
+
+          <div class="form-group flex flex-col gap-[0.10rem] mt-3">
+            <label for="description">Description</label>
+            <input class="form-control" id="description" rows="3" />
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+          <button id="add" class="button w-full lg:w-[unset]">
+            Add to list
+          </button>
+        </div>
+
+        <div id="items" class="mt-4 mb-0">
+          <h2 class="text-3xl your-items">{{ display_name }}'s Items</h2>
+          <div
+            id="todos"
+            class="todos flex flex-row flex-wrap gap-5 mt-3"></div>
+        </div>
       </div>
     </div>
-    <script>
-      function dark() {
-        document.body.classList.toggle('dark-mode');
-        document.getElementById('tab').classList.toggle('table-dark');
-
-        // Save the theme preference in local storage
-        if (document.body.classList.contains('dark-mode')) {
-          localStorage.setItem('theme', 'dark');
-        } else {
-          localStorage.setItem('theme', 'light');
-        }
-      }
-
-      function loadTheme() {
-        const theme = localStorage.getItem('theme');
-
-        if (theme === 'dark') {
-          document.body.classList.add('dark-mode');
-          document.getElementById('tab').classList.add('table-dark');
-          document.getElementById('themeToggle').checked = true;
-        } else {
-          document.body.classList.remove('dark-mode');
-          document.getElementById('tab').classList.remove('table-dark');
-          document.getElementById('themeToggle').checked = false;
-        }
-      }
-
-      // Load the theme on page load
-      window.onload = loadTheme;
-    </script>
 
     <script>
+      window.onload = () => {
+        update();
+      };
+
       const USER_ID = '{{ user_id }}';
 
       document.getElementById('add').addEventListener('click', async () => {
@@ -187,7 +123,7 @@
       async function update() {
         const response = await fetch(`/all?id=${encodeURIComponent(USER_ID)}`);
         const data = await response.json();
-        const tableBody = document.getElementById('tableBody');
+        const tableBody = document.getElementById('todos');
 
         const existingRows = Array.from(tableBody.children);
         for (const row of existingRows) {
@@ -197,32 +133,43 @@
         setTimeout(() => {
           tableBody.innerHTML = '';
 
-          data.items.forEach((item, index) => {
-            const tr = document.createElement('tr');
-            tr.classList.add('fade-in');
-            tr.innerHTML = `
-        <th scope="row">${index + 1}</th>
-        <td>${item.title}</td>
-        <td>${item.description}</td>
-        <td><button class="btn btn-danger" onclick="deleteItem('${
-          item.id
-        }')">Delete</button></td>
+          data.items.forEach((item) => {
+            const wrapper = document.createElement('div');
+            wrapper.id = `todo-${item.id}`;
+            wrapper.className =
+              'todo w-full lg:w-[unset] flex justify-between items-center p-4 px-[1.15rem] rounded-[10px] border border-[#ffffff24] bg-[#ffffff0d]';
+            wrapper.innerHTML = `
+        <div>
+          <h3 class="todo-title text-[#FAF9F6]">${item.title}</h3>
+          <p class="todo-description text-[#dddddd] text-lg">${item.description}</p>
+        </div>
+        <button onclick="deleting('${item.id}')" class="ml-6 button clear-todo">
+          <i class="fa-regular text-[#dddddd] fa-xmark"></i>
+        </button>
       `;
-            tableBody.appendChild(tr);
+            tableBody.appendChild(wrapper);
           });
         }, 400);
       }
 
-      async function deleteItem(id) {
-        await fetch('/delete', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id })
-        });
-        update();
+      async function deleting(id) {
+        try {
+          document.querySelector(`#todo-${id}`).remove();
+          await fetch('/delete', {
+            method: 'DELETE',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id })
+          });
+          const data = await res.json();
+          if (res.ok) {
+            console.log(data.message);
+          } else {
+            console.error(data.error || 'Failed to delete todo');
+          }
+        } catch (err) {
+          console.error(err);
+        }
       }
-
-      update();
     </script>
   </body>
 </html>
